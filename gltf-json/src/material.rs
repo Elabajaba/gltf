@@ -2,7 +2,7 @@ use crate::validation::{Checked, Validate};
 use crate::{extensions, texture, Extras, Index};
 use gltf_derive::Validate;
 use serde::{de, ser};
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 use std::fmt;
 
 /// All valid alpha modes.
@@ -37,13 +37,13 @@ impl ser::Serialize for AlphaMode {
 }
 
 /// The material appearance of a primitive.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
-#[serde(default)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
+#[nserde(default)]
 pub struct Material {
     /// The alpha cutoff value of the material.
-    #[serde(rename = "alphaCutoff")]
-    //#[cfg_attr(feature = "alphaCutoff", serde(skip_serializing_if = "Option::is_none"))]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "alphaCutoff")]
+    //#[cfg_attr(feature = "alphaCutoff", nserde(skip_serializing_if = "Option::is_none"))]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub alpha_cutoff: Option<AlphaCutoff>,
 
     /// The alpha rendering mode of the material.
@@ -62,7 +62,7 @@ pub struct Material {
     ///   destination areas and the rendered output is combined with the
     ///   background using the normal painting operation (i.e. the Porter and
     ///   Duff over operator).
-    #[serde(rename = "alphaMode")]
+    #[nserde(rename = "alphaMode")]
     pub alpha_mode: Checked<AlphaMode>,
 
     /// Specifies whether the material is double-sided.
@@ -74,18 +74,19 @@ pub struct Material {
     ///
     /// The back-face must have its normals reversed before the lighting
     /// equation is evaluated.
-    #[serde(rename = "doubleSided")]
+    #[nserde(rename = "doubleSided")]
     pub double_sided: bool,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// A set of parameter values that are used to define the metallic-roughness
     /// material model from Physically-Based Rendering (PBR) methodology. When not
     /// specified, all the default values of `pbrMetallicRoughness` apply.
-    #[serde(default, rename = "pbrMetallicRoughness")]
+    #[nserde(default)]
+    #[nserde(rename = "pbrMetallicRoughness")]
     pub pbr_metallic_roughness: PbrMetallicRoughness,
 
     /// A tangent space normal map. The texture contains RGB components in linear
@@ -94,8 +95,8 @@ pub struct Material {
     /// Y [-1 to 1]. Blue [128 to 255] maps to Z [1/255 to 1]. The normal vectors
     /// use OpenGL conventions where +X is right and +Y is up. +Z points toward the
     /// viewer.
-    #[serde(rename = "normalTexture")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "normalTexture")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub normal_texture: Option<NormalTexture>,
 
     /// The occlusion map texture. The occlusion values are sampled from the R
@@ -103,54 +104,55 @@ pub struct Material {
     /// lighting and lower values indicate no indirect lighting. These values are
     /// linear. If other channels are present (GBA), they are ignored for occlusion
     /// calculations.
-    #[serde(rename = "occlusionTexture")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "occlusionTexture")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub occlusion_texture: Option<OcclusionTexture>,
 
     /// The emissive map controls the color and intensity of the light being emitted
     /// by the material. This texture contains RGB components in sRGB color space.
     /// If a fourth component (A) is present, it is ignored.
-    #[serde(rename = "emissiveTexture")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "emissiveTexture")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub emissive_texture: Option<texture::Info>,
 
     /// The emissive color of the material.
-    #[serde(rename = "emissiveFactor")]
+    #[nserde(rename = "emissiveFactor")]
     pub emissive_factor: EmissiveFactor,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::material::Material>,
 
     /// Optional application specific data.
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
 /// A set of parameter values that are used to define the metallic-roughness
 /// material model from Physically-Based Rendering (PBR) methodology.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
-#[serde(default)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
+#[nserde(default)]
 pub struct PbrMetallicRoughness {
     /// The material's base color factor.
-    #[serde(rename = "baseColorFactor")]
+    #[nserde(rename = "baseColorFactor")]
     pub base_color_factor: PbrBaseColorFactor,
 
     /// The base color texture.
-    #[serde(rename = "baseColorTexture")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "baseColorTexture")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub base_color_texture: Option<texture::Info>,
 
     /// The metalness of the material.
-    #[serde(rename = "metallicFactor")]
+    #[nserde(rename = "metallicFactor")]
     pub metallic_factor: StrengthFactor,
 
     /// The roughness of the material.
     ///
     /// * A value of 1.0 means the material is completely rough.
     /// * A value of 0.0 means the material is completely smooth.
-    #[serde(rename = "roughnessFactor")]
+    #[nserde(rename = "roughnessFactor")]
     pub roughness_factor: StrengthFactor,
 
     /// The metallic-roughness texture.
@@ -161,22 +163,23 @@ pub struct PbrMetallicRoughness {
     /// The roughness values are sampled from the G channel.
     /// These values are linear. If other channels are present (R or A),
     /// they are ignored for metallic-roughness calculations.
-    #[serde(rename = "metallicRoughnessTexture")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "metallicRoughnessTexture")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub metallic_roughness_texture: Option<texture::Info>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::material::PbrMetallicRoughness>,
 
     /// Optional application specific data.
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
 /// Defines the normal texture of a material.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct NormalTexture {
     /// The index of the texture.
     pub index: Index<texture::Texture>,
@@ -184,21 +187,22 @@ pub struct NormalTexture {
     /// The scalar multiplier applied to each normal vector of the texture.
     ///
     /// This value is ignored if normalTexture is not specified.
-    #[serde(default = "material_normal_texture_scale_default")]
+    #[nserde(default = "material_normal_texture_scale_default")]
     pub scale: f32,
 
     /// The set index of the texture's `TEXCOORD` attribute.
-    #[serde(default, rename = "texCoord")]
+    #[nserde(default, rename = "texCoord")]
     pub tex_coord: u32,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::material::NormalTexture>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
@@ -207,44 +211,46 @@ fn material_normal_texture_scale_default() -> f32 {
 }
 
 /// Defines the occlusion texture of a material.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct OcclusionTexture {
     /// The index of the texture.
     pub index: Index<texture::Texture>,
 
     /// The scalar multiplier controlling the amount of occlusion applied.
-    #[serde(default)]
+    #[nserde(default)]
     pub strength: StrengthFactor,
 
     /// The set index of the texture's `TEXCOORD` attribute.
-    #[serde(default, rename = "texCoord")]
+    #[nserde(default)]
+    #[nserde(rename = "texCoord")]
     pub tex_coord: u32,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::material::OcclusionTexture>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
 /// The alpha cutoff value of a material.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, DeJson, SerJson)]
 pub struct AlphaCutoff(pub f32);
 
 /// The emissive color of a material.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Default, DeJson, SerJson)]
 pub struct EmissiveFactor(pub [f32; 3]);
 
 /// The base color factor of a material.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, DeJson, SerJson)]
 pub struct PbrBaseColorFactor(pub [f32; 4]);
 
 /// A number in the inclusive range [0.0, 1.0] with a default value of 1.0.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, DeJson, SerJson)]
 pub struct StrengthFactor(pub f32);
 
 impl Default for AlphaCutoff {

@@ -1,6 +1,6 @@
 use gltf_derive::Validate;
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 
 /// Metadata about the glTF asset.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
 pub struct Asset {}

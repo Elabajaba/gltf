@@ -2,7 +2,7 @@ use crate::validation::{Checked, Error, Validate};
 use crate::{accessor, extensions, scene, Extras, Index, Path, Root};
 use gltf_derive::Validate;
 use serde::{de, ser};
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 use std::fmt;
 
 /// All valid animation interpolation algorithms.
@@ -53,38 +53,39 @@ pub enum Property {
 }
 
 /// A keyframe animation.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, DeJson, SerJson)]
 pub struct Animation {
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::animation::Animation>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 
     /// An array of channels, each of which targets an animation's sampler at a
     /// node's property.
     ///
     /// Different channels of the same animation must not have equal targets.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub channels: Vec<Channel>,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// An array of samplers that combine input and output accessors with an
     /// interpolation algorithm to define a keyframe graph (but not its target).
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub samplers: Vec<Sampler>,
 }
 
 /// Targets an animation's sampler at a node's property.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, DeJson, SerJson)]
 pub struct Channel {
     /// The index of a sampler in this animation used to compute the value for the
     /// target.
@@ -94,27 +95,29 @@ pub struct Channel {
     pub target: Target,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::animation::Channel>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
 /// The index of the node and TRS property that an animation channel targets.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct Target {
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::animation::Target>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 
     /// The index of the node to target.
@@ -126,23 +129,23 @@ pub struct Target {
 }
 
 /// Defines a keyframe graph but not its target.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct Sampler {
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default, skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::animation::Sampler>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 
     /// The index of an accessor containing keyframe input values, e.g., time.
     pub input: Index<accessor::Accessor>,
 
     /// The interpolation algorithm.
-    #[serde(default)]
+    #[nserde(default)]
     pub interpolation: Checked<Interpolation>,
 
     /// The index of an accessor containing keyframe output values.

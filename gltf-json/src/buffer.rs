@@ -1,8 +1,8 @@
 use crate::validation::Checked;
 use crate::{extensions, Extras, Index};
 use gltf_derive::Validate;
+use nanoserde::{DeJson, SerJson};
 use serde::{de, ser};
-use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 
 /// Corresponds to `GL_ARRAY_BUFFER`.
@@ -43,30 +43,32 @@ impl ser::Serialize for Target {
 }
 
 /// A buffer points to binary data representing geometry, animations, or skins.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct Buffer {
     /// The length of the buffer in bytes.
-    #[serde(default, rename = "byteLength")]
+    #[nserde(default)]
+    #[nserde(rename = "byteLength")]
     pub byte_length: u32,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// The uri of the buffer.  Relative paths are relative to the .gltf file.
     /// Instead of referencing an external file, the uri can also be a data-uri.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub uri: Option<String>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::buffer::Buffer>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
@@ -74,47 +76,46 @@ pub struct Buffer {
 ///
 /// <https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-bufferview>
 ///
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct View {
     /// The parent `Buffer`.
     pub buffer: Index<Buffer>,
 
     /// The length of the `BufferView` in bytes.
-    #[serde(rename = "byteLength")]
+    #[nserde(rename = "byteLength")]
     pub byte_length: u32,
 
     /// Offset into the parent buffer in bytes.
-    #[serde(
-        default,
-        rename = "byteOffset",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "byteOffset")]
     pub byte_offset: Option<u32>,
 
     /// The stride in bytes between vertex attributes or other interleavable data.
     ///
     /// When zero, data is assumed to be tightly packed.
-    #[serde(rename = "byteStride")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "byteStride")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub byte_stride: Option<u32>,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// Optional target the buffer should be bound to.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub target: Option<Checked<Target>>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::buffer::View>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 

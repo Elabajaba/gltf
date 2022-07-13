@@ -1,17 +1,17 @@
 use gltf_derive::Validate;
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 
 /// A camera's projection.
 ///
 /// A node can reference a camera to apply a transform to place the camera in the
 /// scene.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
 pub struct Camera {}
 
 /// Values for an orthographic camera.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
 pub struct Orthographic {}
 
 /// Values for a perspective camera.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
 pub struct Perspective {}

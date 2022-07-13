@@ -3,7 +3,7 @@ use crate::extensions;
 use crate::texture;
 use crate::validation;
 use gltf_derive::Validate;
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 use std::{self, fmt, io, marker};
 
 use crate::path::Path;
@@ -23,98 +23,102 @@ pub trait Get<T> {
 pub struct Index<T>(u32, marker::PhantomData<*const T>);
 
 /// The root object of a glTF 2.0 asset.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
 pub struct Root {
     /// An array of accessors.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub accessors: Vec<Accessor>,
 
     /// An array of keyframe animations.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub animations: Vec<Animation>,
 
     /// Metadata about the glTF asset.
     pub asset: Asset,
 
     /// An array of buffers.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub buffers: Vec<Buffer>,
 
     /// An array of buffer views.
-    #[serde(default, rename = "bufferViews")]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(rename = "bufferViews")]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub buffer_views: Vec<buffer::View>,
 
     /// The default scene.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub scene: Option<Index<Scene>>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::root::Root>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 
     /// Names of glTF extensions used somewhere in this asset.
-    #[serde(default, rename = "extensionsUsed")]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(rename = "extensionsUsed")]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub extensions_used: Vec<String>,
 
     /// Names of glTF extensions required to properly load this asset.
-    #[serde(default, rename = "extensionsRequired")]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(rename = "extensionsRequired")]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub extensions_required: Vec<String>,
 
     /// An array of cameras.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub cameras: Vec<Camera>,
 
     /// An array of images.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub images: Vec<Image>,
 
     /// An array of materials.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub materials: Vec<Material>,
 
     /// An array of meshes.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub meshes: Vec<Mesh>,
 
     /// An array of nodes.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub nodes: Vec<Node>,
 
     /// An array of samplers.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub samplers: Vec<texture::Sampler>,
 
     /// An array of scenes.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub scenes: Vec<Scene>,
 
     /// An array of skins.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub skins: Vec<Skin>,
 
     /// An array of textures.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Vec::is_empty")]
     pub textures: Vec<Texture>,
 }
 

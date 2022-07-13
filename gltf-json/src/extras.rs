@@ -1,5 +1,5 @@
 use gltf_derive::Validate;
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 use std::fmt;
 
 #[cfg(feature = "extras")]
@@ -14,9 +14,10 @@ pub type Extras = Option<::std::boxed::Box<RawValue>>;
 pub type Extras = Void;
 
 /// Type representing no user-defined data.
-#[derive(Clone, Default, Serialize, Deserialize, Validate)]
+#[derive(Clone, Default, DeJson, SerJson, Validate)]
 pub struct Void {
-    #[serde(default, skip_serializing)]
+    #[nserde(default)]
+    #[nserde(skip_serializing)]
     _allow_unknown_fields: (),
 }
 

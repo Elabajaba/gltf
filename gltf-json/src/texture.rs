@@ -2,7 +2,7 @@ use crate::validation::Checked;
 use crate::{extensions, image, Extras, Index};
 use gltf_derive::Validate;
 use serde::{de, ser};
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 use std::fmt;
 
 /// Corresponds to `GL_NEAREST`.
@@ -129,87 +129,93 @@ impl WrappingMode {
 }
 
 /// Texture sampler properties for filtering and wrapping modes.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
-#[serde(default)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
+#[nserde(default)]
 pub struct Sampler {
     /// Magnification filter.
-    #[serde(rename = "magFilter")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "magFilter")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub mag_filter: Option<Checked<MagFilter>>,
 
     /// Minification filter.
-    #[serde(rename = "minFilter")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "minFilter")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub min_filter: Option<Checked<MinFilter>>,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// `s` wrapping mode.
-    #[serde(default, rename = "wrapS")]
+    #[nserde(default)]
+    #[nserde(rename = "wrapS")]
     pub wrap_s: Checked<WrappingMode>,
 
     /// `t` wrapping mode.
-    #[serde(default, rename = "wrapT")]
+    #[nserde(default)]
+    #[nserde(rename = "wrapT")]
     pub wrap_t: Checked<WrappingMode>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::texture::Sampler>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
 /// A texture and its sampler.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct Texture {
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// The index of the sampler used by this texture.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub sampler: Option<Index<Sampler>>,
 
     /// The index of the image used by this texture.
     pub source: Index<image::Image>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::texture::Texture>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 /// Reference to a `Texture`.
 pub struct Info {
     /// The index of the texture.
     pub index: Index<Texture>,
 
     /// The set index of the texture's `TEXCOORD` attribute.
-    #[serde(default, rename = "texCoord")]
+    #[nserde(default)]
+    #[nserde(rename = "texCoord")]
     pub tex_coord: u32,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::texture::Info>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 }
 

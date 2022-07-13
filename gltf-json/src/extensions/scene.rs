@@ -1,5 +1,5 @@
 use gltf_derive::Validate;
-use serde_derive::{Deserialize, Serialize};
+use nanoserde::{DeJson, SerJson};
 
 /// A node in the node hierarchy.  When the node contains `skin`, all
 /// `mesh.primitives` must contain `JOINTS_0` and `WEIGHTS_0` attributes.
@@ -11,10 +11,10 @@ use serde_derive::{Deserialize, Serialize};
 /// identity. When a node is targeted for animation (referenced by an
 /// animation.channel.target), only TRS properties may be present; `matrix` will not
 /// be present.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
 pub struct Node {
     #[cfg(feature = "KHR_lights_punctual")]
-    #[serde(
+    #[nserde(
         default,
         rename = "KHR_lights_punctual",
         skip_serializing_if = "Option::is_none"
@@ -28,13 +28,13 @@ pub mod khr_lights_punctual {
     use crate::{Extras, Index, Path, Root};
     use gltf_derive::Validate;
     use serde::{de, ser};
-    use serde_derive::{Deserialize, Serialize};
+    use nanoserde::{DeJson, SerJson};
     use std::fmt;
 
     /// All valid light types.
     pub const VALID_TYPES: &[&str] = &["directional", "point", "spot"];
 
-    #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+    #[derive(Clone, Debug, DeJson, SerJson, Validate)]
     pub struct KhrLightsPunctual {
         pub light: Index<Light>,
     }
@@ -70,43 +70,46 @@ pub mod khr_lights_punctual {
         Spot,
     }
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, DeJson, SerJson)]
     pub struct Light {
         /// Color of the light source.
-        #[serde(default = "color_default")]
+        #[nserde(default = "color_default")]
         pub color: [f32; 3],
 
         /// Extension specific data.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
         pub extensions: Option<std::boxed::Box<serde_json::value::RawValue>>,
 
         /// Optional application specific data.
-        #[serde(default)]
-        #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-        #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+        #[nserde(default)]
+        #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+        #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
         pub extras: Extras,
 
         /// Intensity of the light source. `point` and `spot` lights use luminous intensity
         /// in candela (lm/sr) while `directional` lights use illuminance in lux (lm/m^2).
-        #[serde(default = "intensity_default")]
+        #[nserde(default = "intensity_default")]
         pub intensity: f32,
 
         /// Optional user-defined name for this object.
         #[cfg(feature = "names")]
-        #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+        #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
         pub name: Option<String>,
 
         /// A distance cutoff at which the light's intensity may be considered to have reached
         /// zero.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
         pub range: Option<f32>,
 
         /// Spot light parameters.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
         pub spot: Option<Spot>,
 
         /// Specifies the light type.
-        #[serde(rename = "type")]
+        #[nserde(rename = "type")]
         pub type_: Checked<Type>,
     }
 
@@ -139,15 +142,15 @@ pub mod khr_lights_punctual {
     }
 
     /// Spot light parameters.
-    #[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
-    #[serde(rename_all = "camelCase")]
+    #[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
+    #[nserde(rename_all = "camelCase")]
     pub struct Spot {
         /// Angle in radians from centre of spotlight where falloff begins.
-        #[serde(default)]
+        #[nserde(default)]
         pub inner_cone_angle: f32,
 
         /// Angle in radians from centre of spotlight where falloff ends.
-        #[serde(default = "outer_cone_angle_default")]
+        #[nserde(default = "outer_cone_angle_default")]
         pub outer_cone_angle: f32,
     }
 
@@ -204,9 +207,9 @@ pub mod khr_lights_punctual {
 pub mod khr_materials_variants {
     use crate::validation::{Error, Validate};
     use crate::{Path, Root};
-    use serde_derive::{Deserialize, Serialize};
+    use nanoserde::{DeJson, SerJson};
 
-    #[derive(Clone, Debug, Deserialize, Serialize)]
+    #[derive(Clone, Debug, DeJson, SerJson)]
     pub struct Variant {
         pub name: String,
     }
@@ -223,5 +226,5 @@ pub mod khr_materials_variants {
 }
 
 /// The root `Node`s of a scene.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
 pub struct Scene {}

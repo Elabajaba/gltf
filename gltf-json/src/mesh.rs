@@ -1,9 +1,7 @@
 use crate::validation::{Checked, Error, Validate};
 use crate::{accessor, extensions, material, Extras, Index};
 use gltf_derive::Validate;
-use serde::{de, ser};
-use serde_derive::{Deserialize, Serialize};
-use serde_json::from_value;
+use nanoserde::{DeJson, SerJson};
 use std::collections::HashMap;
 use std::fmt;
 
@@ -71,64 +69,67 @@ pub enum Mode {
 ///
 /// A node can contain one or more meshes and its transform places the meshes in
 /// the scene.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct Mesh {
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::mesh::Mesh>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// Defines the geometry to be renderered with a material.
     pub primitives: Vec<Primitive>,
 
     /// Defines the weights to be applied to the morph targets.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub weights: Option<Vec<f32>>,
 }
 
 /// Geometry to be rendered with the given material.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, DeJson, SerJson)]
 pub struct Primitive {
     /// Maps attribute semantic names to the `Accessor`s containing the
     /// corresponding attribute data.
     pub attributes: HashMap<Checked<Semantic>, Index<accessor::Accessor>>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::mesh::Primitive>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 
     /// The index of the accessor that contains the indices.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub indices: Option<Index<accessor::Accessor>>,
 
     /// The index of the material to apply to this primitive when rendering
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub material: Option<Index<material::Material>>,
 
     /// The type of primitives to render.
-    #[serde(default, skip_serializing_if = "is_primitive_mode_default")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "is_primitive_mode_default")]
     pub mode: Checked<Mode>,
 
     /// An array of Morph Targets, each  Morph Target is a dictionary mapping
     /// attributes (only `POSITION`, `NORMAL`, and `TANGENT` supported) to their
     /// deviations in the Morph Target.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub targets: Option<Vec<MorphTarget>>,
 }
 
@@ -188,21 +189,21 @@ impl Validate for Primitive {
 }
 
 /// A dictionary mapping attributes to their deviations in the Morph Target.
-#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct MorphTarget {
     /// XYZ vertex position displacements of type `[f32; 3]`.
-    #[serde(rename = "POSITION")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "POSITION")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub positions: Option<Index<accessor::Accessor>>,
 
     /// XYZ vertex normal displacements of type `[f32; 3]`.
-    #[serde(rename = "NORMAL")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "NORMAL")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub normals: Option<Index<accessor::Accessor>>,
 
     /// XYZ vertex tangent displacements of type `[f32; 3]`.
-    #[serde(rename = "TANGENT")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "TANGENT")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub tangents: Option<Index<accessor::Accessor>>,
 }
 

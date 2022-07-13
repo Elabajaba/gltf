@@ -1,13 +1,13 @@
 use crate::validation::{Checked, Error, Validate};
 use crate::{buffer, extensions, Extras, Index, Path, Root};
 use gltf_derive::Validate;
-use serde::{de, ser};
-use serde_derive::{Deserialize, Serialize};
-use serde_json::Value;
+// use serde::{de, ser};
+use nanoserde::{DeJson, SerJson};
+// use serde_json::Value;
 use std::fmt;
 
 /// The component data type.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, DeJson)]
 pub enum ComponentType {
     /// Corresponds to `GL_BYTE`.
     I8 = 1,
@@ -83,36 +83,37 @@ pub mod sparse {
     use crate::extensions;
 
     /// Indices of those attributes that deviate from their initialization value.
-    #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+    #[derive(Clone, Debug, DeJson, SerJson, Validate)]
     pub struct Indices {
         /// The parent buffer view containing the sparse indices.
         ///
         /// The referenced buffer view must not have `ARRAY_BUFFER` nor
         /// `ELEMENT_ARRAY_BUFFER` as its target.
-        #[serde(rename = "bufferView")]
+        #[nserde(rename = "bufferView")]
         pub buffer_view: Index<buffer::View>,
 
         /// The offset relative to the start of the parent `BufferView` in bytes.
-        #[serde(default, rename = "byteOffset")]
+        #[nserde(default, rename = "byteOffset")]
         pub byte_offset: u32,
 
         /// The data type of each index.
-        #[serde(rename = "componentType")]
+        #[nserde(rename = "componentType")]
         pub component_type: Checked<IndexComponentType>,
 
         /// Extension specific data.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
         pub extensions: Option<extensions::accessor::sparse::Indices>,
 
         /// Optional application specific data.
-        #[serde(default)]
-        #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-        #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+        #[nserde(default)]
+        #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+        #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
         pub extras: Extras,
     }
 
     /// Sparse storage of attributes that deviate from their initialization value.
-    #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+    #[derive(Clone, Debug, DeJson, SerJson, Validate)]
     pub struct Sparse {
         /// The number of attributes encoded in this sparse accessor.
         pub count: u32,
@@ -131,55 +132,57 @@ pub mod sparse {
         pub values: Values,
 
         /// Extension specific data.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
         pub extensions: Option<extensions::accessor::sparse::Sparse>,
 
         /// Optional application specific data.
-        #[serde(default)]
-        #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-        #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+        #[nserde(default)]
+        #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+        #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
         pub extras: Extras,
     }
 
     /// Array of size `count * number_of_components` storing the displaced
     /// accessor attributes pointed by `accessor::sparse::Indices`.
-    #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+    #[derive(Clone, Debug, DeJson, SerJson, Validate)]
     pub struct Values {
         /// The parent buffer view containing the sparse indices.
         ///
         /// The referenced buffer view must not have `ARRAY_BUFFER` nor
         /// `ELEMENT_ARRAY_BUFFER` as its target.
-        #[serde(rename = "bufferView")]
+        #[nserde(rename = "bufferView")]
         pub buffer_view: Index<buffer::View>,
 
         /// The offset relative to the start of the parent buffer view in bytes.
-        #[serde(default, rename = "byteOffset")]
+        #[nserde(default, rename = "byteOffset")]
         pub byte_offset: u32,
 
         /// Extension specific data.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
         pub extensions: Option<extensions::accessor::sparse::Values>,
 
         /// Optional application specific data.
-        #[serde(default)]
-        #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-        #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+        #[nserde(default)]
+        #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+        #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
         pub extras: Extras,
     }
 }
 
 /// A typed view into a buffer view.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, DeJson, SerJson)]
 pub struct Accessor {
     /// The parent buffer view this accessor reads from.
     ///
     /// This field can be omitted in sparse accessors.
-    #[serde(rename = "bufferView")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(rename = "bufferView")]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub buffer_view: Option<Index<buffer::View>>,
 
     /// The offset relative to the start of the parent `BufferView` in bytes.
-    #[serde(default, rename = "byteOffset")]
+    #[nserde(default, rename = "byteOffset")]
     pub byte_offset: u32,
 
     /// The number of components within the buffer view - not to be confused
@@ -187,44 +190,47 @@ pub struct Accessor {
     pub count: u32,
 
     /// The data type of components in the attribute.
-    #[serde(rename = "componentType")]
+    #[nserde(rename = "componentType")]
     pub component_type: Checked<GenericComponentType>,
 
     /// Extension specific data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::accessor::Accessor>,
 
     /// Optional application specific data.
-    #[serde(default)]
-    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
-    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    #[nserde(default)]
+    #[cfg_attr(feature = "extras", nserde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), nserde(skip_serializing))]
     pub extras: Extras,
 
     /// Specifies if the attribute is a scalar, vector, or matrix.
-    #[serde(rename = "type")]
+    #[nserde(rename = "type")]
     pub type_: Checked<Type>,
 
     /// Minimum value of each component in this attribute.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub min: Option<Value>,
 
     /// Maximum value of each component in this attribute.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub max: Option<Value>,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
-    #[cfg_attr(feature = "names", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(feature = "names", nserde(skip_serializing_if = "Option::is_none"))]
     pub name: Option<String>,
 
     /// Specifies whether integer data values should be normalized.
-    #[serde(default, skip_serializing_if = "is_normalized_default")]
+    #[nserde(default, skip_serializing_if = "is_normalized_default")]
     pub normalized: bool,
 
     /// Sparse storage of attributes that deviate from their initialization
     /// value.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub sparse: Option<sparse::Sparse>,
 }
 
@@ -267,11 +273,11 @@ fn is_normalized_default(b: &bool) -> bool {
 }
 
 /// The data type of an index.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, DeJson, SerJson)]
 pub struct IndexComponentType(pub ComponentType);
 
 /// The data type of a generic vertex attribute.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, DeJson, SerJson)]
 pub struct GenericComponentType(pub ComponentType);
 
 impl<'de> de::Deserialize<'de> for Checked<GenericComponentType> {
