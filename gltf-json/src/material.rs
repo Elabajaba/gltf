@@ -1,9 +1,7 @@
 use crate::validation::{Checked, Validate};
 use crate::{extensions, texture, Extras, Index};
 use gltf_derive::Validate;
-use serde::{de, ser};
 use nanoserde::{DeJson, SerJson};
-use std::fmt;
 
 /// All valid alpha modes.
 pub const VALID_ALPHA_MODES: &[&str] = &["OPAQUE", "MASK", "BLEND"];
@@ -23,18 +21,28 @@ pub enum AlphaMode {
     Blend,
 }
 
-impl ser::Serialize for AlphaMode {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        match *self {
-            AlphaMode::Opaque => serializer.serialize_str("OPAQUE"),
-            AlphaMode::Mask => serializer.serialize_str("MASK"),
-            AlphaMode::Blend => serializer.serialize_str("BLEND"),
+impl SerJson for AlphaMode {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        match self {
+            AlphaMode::Opaque => "OPAQUE".ser_json(d, s),
+            AlphaMode::Mask => "MASK".ser_json(d, s),
+            AlphaMode::Blend => "BLEND".ser_json(d, s),
         }
     }
 }
+
+// impl ser::Serialize for AlphaMode {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         match *self {
+//             AlphaMode::Opaque => serializer.serialize_str("OPAQUE"),
+//             AlphaMode::Mask => serializer.serialize_str("MASK"),
+//             AlphaMode::Blend => serializer.serialize_str("BLEND"),
+//         }
+//     }
+// }
 
 /// The material appearance of a primitive.
 #[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
@@ -187,11 +195,12 @@ pub struct NormalTexture {
     /// The scalar multiplier applied to each normal vector of the texture.
     ///
     /// This value is ignored if normalTexture is not specified.
-    #[nserde(default = "material_normal_texture_scale_default")]
+    #[nserde(default = 1.0)]
     pub scale: f32,
 
     /// The set index of the texture's `TEXCOORD` attribute.
-    #[nserde(default, rename = "texCoord")]
+    #[nserde(default)]
+    #[nserde(rename = "texCoord")]
     pub tex_coord: u32,
 
     /// Extension specific data.
@@ -267,36 +276,45 @@ impl Default for AlphaMode {
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<AlphaMode> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<AlphaMode>;
-
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_ALPHA_MODES)
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::AlphaMode::*;
-                use crate::validation::Checked::*;
-                Ok(match value {
-                    "OPAQUE" => Valid(Opaque),
-                    "MASK" => Valid(Mask),
-                    "BLEND" => Valid(Blend),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_str(Visitor)
+impl DeJson for Checked<AlphaMode> {
+    fn de_json(
+        state: &mut nanoserde::DeJsonState,
+        input: &mut std::str::Chars,
+    ) -> Result<Self, nanoserde::DeJsonErr> {
+        todo!()
     }
 }
+
+// impl<'de> de::Deserialize<'de> for Checked<AlphaMode> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<AlphaMode>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_ALPHA_MODES)
+//             }
+
+//             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::AlphaMode::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value {
+//                     "OPAQUE" => Valid(Opaque),
+//                     "MASK" => Valid(Mask),
+//                     "BLEND" => Valid(Blend),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_str(Visitor)
+//     }
+// }
 
 impl Validate for EmissiveFactor {}
 

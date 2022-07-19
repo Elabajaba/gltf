@@ -9,7 +9,8 @@ use nanoserde::{DeJson, SerJson};
 pub struct Mesh {}
 
 /// Geometry to be rendered with the given material.
-#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
+#[cfg_attr(feature = "KHR_materials_variants", DeJson, SerJson)]
+#[derive(Clone, Debug, Default, Validate)]
 pub struct Primitive {
     #[cfg(feature = "KHR_materials_variants")]
     #[nserde(default)]

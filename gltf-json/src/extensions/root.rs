@@ -1,24 +1,24 @@
 use gltf_derive::Validate;
-use nanoserde::{DeJson, SerJson};
 
 /// The root object of a glTF 2.0 asset.
-#[cfg_attr(all(feature = "KHR_lights_punctual", feature = "KHR_materials_variants"), DeJson, SerJson)]
+#[cfg_attr(feature = "KHR_lights_punctual", nanoserde::DeJson, nanoserde::SerJson)]
+#[cfg_attr(feature = "KHR_materials_variants", nanoserde::DeJson, nanoserde::SerJson)]
 #[derive(Clone, Debug, Default, Validate)]
 pub struct Root {
     #[cfg(feature = "KHR_lights_punctual")]
-    // #[nserde(
-    //     // default,
-    //     rename = "KHR_lights_punctual",
-    //     // skip_serializing_if = "Option::is_none"
-    // )]
+    #[nserde(
+        default,
+        rename = "KHR_lights_punctual",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub khr_lights_punctual: Option<KhrLightsPunctual>,
 
     #[cfg(feature = "KHR_materials_variants")]
-    // #[nserde(
-    //     // default,
-    //     rename = "KHR_materials_variants",
-    //     // skip_serializing_if = "Option::is_none"
-    // )]
+    #[nserde(
+        default,
+        rename = "KHR_materials_variants",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub khr_materials_variants: Option<KhrMaterialsVariants>,
 }
 

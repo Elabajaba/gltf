@@ -1,7 +1,7 @@
 use crate::validation::Checked;
 use crate::{extensions, image, Extras, Index};
 use gltf_derive::Validate;
-use serde::{de, ser};
+// use serde::{de, ser};
 use nanoserde::{DeJson, SerJson};
 use std::fmt;
 
@@ -49,7 +49,7 @@ pub const VALID_MIN_FILTERS: &[u32] = &[
 pub const VALID_WRAPPING_MODES: &[u32] = &[CLAMP_TO_EDGE, MIRRORED_REPEAT, REPEAT];
 
 /// Magnification filter.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, DeJson, Eq, PartialEq)]
 pub enum MagFilter {
     /// Corresponds to `GL_NEAREST`.
     Nearest = 1,
@@ -69,7 +69,7 @@ impl MagFilter {
 }
 
 /// Minification filter.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, DeJson, Eq, PartialEq)]
 pub enum MinFilter {
     /// Corresponds to `GL_NEAREST`.
     Nearest = 1,
@@ -105,7 +105,7 @@ impl MinFilter {
 }
 
 /// Texture co-ordinate wrapping mode.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, DeJson, Eq, PartialEq)]
 pub enum WrappingMode {
     /// Corresponds to `GL_CLAMP_TO_EDGE`.
     ClampToEdge = 1,

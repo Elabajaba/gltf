@@ -1,9 +1,10 @@
+use std::convert::TryInto;
+use std::str::Chars;
+
 use crate::validation::Checked;
 use crate::{extensions, Extras, Index};
 use gltf_derive::Validate;
-use nanoserde::{DeJson, SerJson};
-use serde::{de, ser};
-use std::fmt;
+use nanoserde::{DeJson, DeJsonErr, DeJsonState, SerJson};
 
 /// Corresponds to `GL_ARRAY_BUFFER`.
 pub const ARRAY_BUFFER: u32 = 34_962;
@@ -30,14 +31,11 @@ pub enum Target {
     ElementArrayBuffer,
 }
 
-impl ser::Serialize for Target {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
+impl SerJson for Target {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
         match *self {
-            Target::ArrayBuffer => serializer.serialize_u32(ARRAY_BUFFER),
-            Target::ElementArrayBuffer => serializer.serialize_u32(ELEMENT_ARRAY_BUFFER),
+            Target::ArrayBuffer => ARRAY_BUFFER.ser_json(d, s),
+            Target::ElementArrayBuffer => ELEMENT_ARRAY_BUFFER.ser_json(d, s),
         }
     }
 }
@@ -119,32 +117,45 @@ pub struct View {
     pub extras: Extras,
 }
 
-impl<'de> de::Deserialize<'de> for Checked<Target> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<Target>;
+impl DeJson for Checked<Target> {
+    fn de_json(state: &mut DeJsonState, input: &mut Chars<'_>) -> Result<Self, DeJsonErr> {
+        let val: u32 = state.as_f64().try_into()?;
+        let temp = match val {
+            ARRAY_BUFFER => Target::ArrayBuffer,
+            ELEMENT_ARRAY_BUFFER => Target::ElementArrayBuffer,
+            // _ => Err("Invalid target, valid targets are: {}", VALID_TARGETS),
+        };
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_TARGETS)
-            }
-
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::Target::*;
-                use crate::validation::Checked::*;
-                Ok(match value as u32 {
-                    ARRAY_BUFFER => Valid(ArrayBuffer),
-                    ELEMENT_ARRAY_BUFFER => Valid(ElementArrayBuffer),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_u64(Visitor)
+        todo!()
     }
 }
+
+// impl<'de> de::Deserialize<'de> for Checked<Target> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<Target>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_TARGETS)
+//             }
+
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::Target::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value as u32 {
+//                     ARRAY_BUFFER => Valid(ArrayBuffer),
+//                     ELEMENT_ARRAY_BUFFER => Valid(ElementArrayBuffer),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor)
+//     }
+// }

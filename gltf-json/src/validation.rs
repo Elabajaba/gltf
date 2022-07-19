@@ -1,4 +1,4 @@
-use serde::{ser, Serialize, Serializer};
+use nanoserde::SerJson;
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -61,16 +61,23 @@ impl<T> Checked<T> {
     }
 }
 
-impl<T: Serialize> Serialize for Checked<T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
+impl<T: SerJson> SerJson for Checked<T> {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
         match *self {
-            Checked::Valid(ref item) => item.serialize(serializer),
-            Checked::Invalid => Err(ser::Error::custom("invalid item")),
+            Checked::Valid(ref item) => item.ser_json(d, s),
+            Checked::Invalid => todo!("invalid item"),
         }
     }
+
+    // fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    // where
+    //     S: Serializer,
+    // {
+    //     match *self {
+    //         Checked::Valid(ref item) => item.serialize(serializer),
+    //         Checked::Invalid => Err(ser::Error::custom("invalid item")),
+    //     }
+    // }
 }
 
 impl<T: Clone> Clone for Checked<T> {
@@ -140,15 +147,15 @@ impl<T: Validate> Validate for Vec<T> {
     }
 }
 
-impl Validate for std::boxed::Box<serde_json::value::RawValue> {
-    fn validate<P, R>(&self, _: &Root, _: P, _: &mut R)
-    where
-        P: Fn() -> Path,
-        R: FnMut(&dyn Fn() -> Path, Error),
-    {
-        // nop
-    }
-}
+// impl Validate for std::boxed::Box<serde_json::value::RawValue> {
+//     fn validate<P, R>(&self, _: &Root, _: P, _: &mut R)
+//     where
+//         P: Fn() -> Path,
+//         R: FnMut(&dyn Fn() -> Path, Error),
+//     {
+//         // nop
+//     }
+// }
 
 impl std::error::Error for Error {}
 
@@ -176,4 +183,4 @@ impl Validate for [f32; 4] {}
 impl Validate for [f32; 16] {}
 impl Validate for () {}
 impl Validate for String {}
-impl Validate for serde_json::Value {}
+impl Validate for SerJson {}

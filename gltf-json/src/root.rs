@@ -4,12 +4,13 @@ use crate::texture;
 use crate::validation;
 use gltf_derive::Validate;
 use nanoserde::{DeJson, SerJson};
-use std::{self, fmt, io, marker};
+use std::convert::TryInto;
+use std::{self, fmt, marker};
 
 use crate::path::Path;
 use crate::{
-    Accessor, Animation, Asset, Buffer, Camera, Error, Extras, Image, Material, Mesh, Node, Scene,
-    Skin, Texture, Value,
+    Accessor, Animation, Asset, Buffer, Camera, Extras, Image, Material, Mesh, Node, Scene, Skin,
+    Texture,
 };
 use validation::Validate;
 
@@ -131,65 +132,65 @@ impl Root {
         (self as &dyn Get<T>).get(index)
     }
 
-    /// Deserialize from a JSON string slice.
-    #[allow(clippy::should_implement_trait)]
-    pub fn from_str(str_: &str) -> Result<Self, Error> {
-        serde_json::from_str(str_)
-    }
+    // /// Deserialize from a JSON string slice.
+    // #[allow(clippy::should_implement_trait)]
+    // pub fn from_str(str_: &str) -> Result<Self, Error> {
+    //     serde_json::from_str(str_)
+    // }
 
-    /// Deserialize from a JSON byte slice.
-    pub fn from_slice(slice: &[u8]) -> Result<Self, Error> {
-        serde_json::from_slice(slice)
-    }
+    // /// Deserialize from a JSON byte slice.
+    // pub fn from_slice(slice: &[u8]) -> Result<Self, Error> {
+    //     serde_json::from_slice(slice)
+    // }
 
-    /// Deserialize from a stream of JSON.
-    pub fn from_reader<R>(reader: R) -> Result<Self, Error>
-    where
-        R: io::Read,
-    {
-        serde_json::from_reader(reader)
-    }
+    // /// Deserialize from a stream of JSON.
+    // pub fn from_reader<R>(reader: R) -> Result<Self, Error>
+    // where
+    //     R: io::Read,
+    // {
+    //     serde_json::from_reader(reader)
+    // }
 
-    /// Serialize as a `String` of JSON.
-    pub fn to_string(&self) -> Result<String, Error> {
-        serde_json::to_string(self)
-    }
+    // /// Serialize as a `String` of JSON.
+    // pub fn to_string(&self) -> Result<String, Error> {
+    //     serde_json::to_string(self)
+    // }
 
-    /// Serialize as a pretty-printed `String` of JSON.
-    pub fn to_string_pretty(&self) -> Result<String, Error> {
-        serde_json::to_string_pretty(self)
-    }
+    // /// Serialize as a pretty-printed `String` of JSON.
+    // pub fn to_string_pretty(&self) -> Result<String, Error> {
+    //     serde_json::to_string_pretty(self)
+    // }
 
-    /// Serialize as a generic JSON value.
-    pub fn to_value(&self) -> Result<Value, Error> {
-        serde_json::to_value(self)
-    }
+    // /// Serialize as a generic JSON value.
+    // pub fn to_value(&self) -> Result<Value, Error> {
+    //     serde_json::to_value(self)
+    // }
 
-    /// Serialize as a JSON byte vector.
-    pub fn to_vec(&self) -> Result<Vec<u8>, Error> {
-        serde_json::to_vec(self)
-    }
+    // /// Serialize as a JSON byte vector.
+    // pub fn to_vec(&self) -> Result<Vec<u8>, Error> {
+    //     serde_json::to_vec(self)
+    // }
 
-    /// Serialize as a pretty-printed JSON byte vector.
-    pub fn to_vec_pretty(&self) -> Result<Vec<u8>, Error> {
-        serde_json::to_vec_pretty(self)
-    }
+    // /// Serialize as a pretty-printed JSON byte vector.
+    // pub fn to_vec_pretty(&self) -> Result<Vec<u8>, Error> {
+    //     serde_json::to_vec_pretty(self)
+    // }
 
-    /// Serialize as a JSON byte writertor.
-    pub fn to_writer<W>(&self, writer: W) -> Result<(), Error>
-    where
-        W: io::Write,
-    {
-        serde_json::to_writer(writer, self)
-    }
+    // /// Serialize as a JSON byte writertor.
+    // pub fn to_writer<W>(&self, writer: W) -> Result<(), Error>
+    // where
+    //     W: io::Write,
+    // {
+    //     serde_json::to_writer(writer, self)
+    // }
 
-    /// Serialize as a pretty-printed JSON byte writertor.
-    pub fn to_writer_pretty<W>(&self, writer: W) -> Result<(), Error>
-    where
-        W: io::Write,
-    {
-        serde_json::to_writer_pretty(writer, self)
-    }
+    // /// Serialize as a pretty-printed JSON byte writertor.
+    // pub fn to_writer_pretty<W>(&self, writer: W) -> Result<(), Error>
+    // where
+    //     W: io::Write,
+    // {
+    //     serde_json::to_writer_pretty(writer, self)
+    // }
 }
 
 impl<T> Index<T> {
@@ -204,38 +205,52 @@ impl<T> Index<T> {
     }
 }
 
-impl<T> serde::Serialize for Index<T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ::serde::Serializer,
-    {
-        serializer.serialize_u64(self.value() as u64)
-    }
-}
+// impl<T> serde::Serialize for Index<T> {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ::serde::Serializer,
+//     {
+//         serializer.serialize_u64(self.value() as u64)
+//     }
+// }
 
-impl<'de, T> serde::Deserialize<'de> for Index<T> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        struct Visitor<T>(marker::PhantomData<T>);
-        impl<'de, T> serde::de::Visitor<'de> for Visitor<T> {
-            type Value = Index<T>;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("index into child of root")
-            }
-
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                Ok(Index::new(value as u32))
-            }
+impl<T> SerJson for Index<T> {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        if let Some(val) = self.value().try_into::<u64>() {
+            val.ser_json(d, s);
         }
-        deserializer.deserialize_u64(Visitor::<T>(marker::PhantomData))
     }
 }
+
+impl<T> DeJson for Index<T> {
+    fn de_json(state: &mut nanoserde::DeJsonState, input: &mut std::str::Chars) -> Result<Self, nanoserde::DeJsonErr> {
+        todo!()
+    }
+}
+
+// impl<'de, T> serde::Deserialize<'de> for Index<T> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: serde::Deserializer<'de>,
+//     {
+//         struct Visitor<T>(marker::PhantomData<T>);
+//         impl<'de, T> serde::de::Visitor<'de> for Visitor<T> {
+//             type Value = Index<T>;
+
+//             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+//                 formatter.write_str("index into child of root")
+//             }
+
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: serde::de::Error,
+//             {
+//                 Ok(Index::new(value as u32))
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor::<T>(marker::PhantomData))
+//     }
+// }
 
 impl<T> Clone for Index<T> {
     fn clone(&self) -> Self {

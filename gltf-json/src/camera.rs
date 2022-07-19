@@ -1,7 +1,6 @@
 use crate::validation::{Checked, Error, Validate};
 use crate::{extensions, Extras, Path, Root};
 use gltf_derive::Validate;
-use serde::{de, ser};
 use nanoserde::{DeJson, SerJson};
 use std::fmt;
 

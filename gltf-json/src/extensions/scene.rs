@@ -11,7 +11,8 @@ use nanoserde::{DeJson, SerJson};
 /// identity. When a node is targeted for animation (referenced by an
 /// animation.channel.target), only TRS properties may be present; `matrix` will not
 /// be present.
-#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
+#[cfg_attr(feature = "KHR_lights_punctual", DeJson, SerJson)]
+#[derive(Clone, Debug, Default, Validate)]
 pub struct Node {
     #[cfg(feature = "KHR_lights_punctual")]
     #[nserde(

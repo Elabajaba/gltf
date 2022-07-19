@@ -2,7 +2,7 @@ use crate::validation::{Checked, Error, Validate};
 use crate::{buffer, extensions, Extras, Index, Path, Root};
 use gltf_derive::Validate;
 // use serde::{de, ser};
-use nanoserde::{DeJson, SerJson};
+use nanoserde::{DeJson, SerJson, DeJsonTok};
 // use serde_json::Value;
 use std::fmt;
 
@@ -24,7 +24,7 @@ pub enum ComponentType {
 }
 
 /// Specifies whether an attribute, vector, or matrix.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, DeJson)]
 pub enum Type {
     /// Scalar quantity.
     Scalar = 1,
@@ -93,7 +93,8 @@ pub mod sparse {
         pub buffer_view: Index<buffer::View>,
 
         /// The offset relative to the start of the parent `BufferView` in bytes.
-        #[nserde(default, rename = "byteOffset")]
+        #[nserde(default)]
+        #[nserde(rename = "byteOffset")]
         pub byte_offset: u32,
 
         /// The data type of each index.
@@ -102,7 +103,7 @@ pub mod sparse {
 
         /// Extension specific data.
         #[nserde(default)]
-    #[nserde(skip_serializing_if = "Option::is_none")]
+        #[nserde(skip_serializing_if = "Option::is_none")]
         pub extensions: Option<extensions::accessor::sparse::Indices>,
 
         /// Optional application specific data.
@@ -133,7 +134,7 @@ pub mod sparse {
 
         /// Extension specific data.
         #[nserde(default)]
-    #[nserde(skip_serializing_if = "Option::is_none")]
+        #[nserde(skip_serializing_if = "Option::is_none")]
         pub extensions: Option<extensions::accessor::sparse::Sparse>,
 
         /// Optional application specific data.
@@ -155,12 +156,13 @@ pub mod sparse {
         pub buffer_view: Index<buffer::View>,
 
         /// The offset relative to the start of the parent buffer view in bytes.
-        #[nserde(default, rename = "byteOffset")]
+        #[nserde(default)]
+        #[nserde(rename = "byteOffset")]
         pub byte_offset: u32,
 
         /// Extension specific data.
         #[nserde(default)]
-    #[nserde(skip_serializing_if = "Option::is_none")]
+        #[nserde(skip_serializing_if = "Option::is_none")]
         pub extensions: Option<extensions::accessor::sparse::Values>,
 
         /// Optional application specific data.
@@ -182,7 +184,8 @@ pub struct Accessor {
     pub buffer_view: Option<Index<buffer::View>>,
 
     /// The offset relative to the start of the parent `BufferView` in bytes.
-    #[nserde(default, rename = "byteOffset")]
+    #[nserde(default)]
+    #[nserde(rename = "byteOffset")]
     pub byte_offset: u32,
 
     /// The number of components within the buffer view - not to be confused
@@ -211,12 +214,12 @@ pub struct Accessor {
     /// Minimum value of each component in this attribute.
     #[nserde(default)]
     #[nserde(skip_serializing_if = "Option::is_none")]
-    pub min: Option<Value>,
+    pub min: Option<DeJsonTok>,
 
     /// Maximum value of each component in this attribute.
     #[nserde(default)]
     #[nserde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<Value>,
+    pub max: Option<DeJsonTok>,
 
     /// Optional user-defined name for this object.
     #[cfg(feature = "names")]
@@ -224,7 +227,8 @@ pub struct Accessor {
     pub name: Option<String>,
 
     /// Specifies whether integer data values should be normalized.
-    #[nserde(default, skip_serializing_if = "is_normalized_default")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "is_normalized_default")]
     pub normalized: bool,
 
     /// Sparse storage of attributes that deviate from their initialization
