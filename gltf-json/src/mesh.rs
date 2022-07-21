@@ -257,50 +257,75 @@ impl Mode {
         }
     }
 }
-
-impl<'de> de::Deserialize<'de> for Checked<Mode> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<Mode>;
-
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_MODES)
-            }
-
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::Mode::*;
-                use crate::validation::Checked::*;
-                Ok(match value as u32 {
-                    POINTS => Valid(Points),
-                    LINES => Valid(Lines),
-                    LINE_LOOP => Valid(LineLoop),
-                    LINE_STRIP => Valid(LineStrip),
-                    TRIANGLES => Valid(Triangles),
-                    TRIANGLE_STRIP => Valid(TriangleStrip),
-                    TRIANGLE_FAN => Valid(TriangleFan),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_u64(Visitor)
+impl SerJson for Mode {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        self.as_gl_enum().ser_json(d, s);
     }
 }
 
-impl ser::Serialize for Mode {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_u32(self.as_gl_enum())
+impl DeJson for Checked<Mode> {
+    fn deserialize_json(input: &str) -> Result<Self, nanoserde::DeJsonErr> {
+        use Checked::*;
+        use Mode::*;
+
+        let value: u32 = input.try_into()?;
+
+        Ok(match value {
+            POINTS => Valid(Points),
+            LINES => Valid(Lines),
+            LINE_LOOP => Valid(LineLoop),
+            LINE_STRIP => Valid(LineStrip),
+            TRIANGLES => Valid(Triangles),
+            TRIANGLE_STRIP => Valid(TriangleStrip),
+            TRIANGLE_FAN => Valid(TriangleFan),
+            _ => Invalid,
+        })
     }
 }
+
+// impl<'de> de::Deserialize<'de> for Checked<Mode> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<Mode>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_MODES)
+//             }
+
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::Mode::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value as u32 {
+//                     POINTS => Valid(Points),
+//                     LINES => Valid(Lines),
+//                     LINE_LOOP => Valid(LineLoop),
+//                     LINE_STRIP => Valid(LineStrip),
+//                     TRIANGLES => Valid(Triangles),
+//                     TRIANGLE_STRIP => Valid(TriangleStrip),
+//                     TRIANGLE_FAN => Valid(TriangleFan),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor)
+//     }
+// }
+
+// impl ser::Serialize for Mode {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_u32(self.as_gl_enum())
+//     }
+// }
 
 impl Semantic {
     fn checked(s: &str) -> Checked<Self> {
@@ -333,14 +358,20 @@ impl Semantic {
     }
 }
 
-impl ser::Serialize for Semantic {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
+impl SerJson for Semantic {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        self.to_string().ser_json(d, s);
     }
 }
+
+// impl ser::Serialize for Semantic {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_str(&self.to_string())
+//     }
+// }
 
 impl ToString for Semantic {
     fn to_string(&self) -> String {
@@ -368,26 +399,32 @@ impl ToString for Checked<Semantic> {
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<Semantic> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<Semantic>;
-
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "semantic name")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                Ok(Semantic::checked(value))
-            }
-        }
-        deserializer.deserialize_str(Visitor)
+impl DeJson for Checked<Semantic> {
+    fn deserialize_json(input: &str) -> Result<Self, nanoserde::DeJsonErr> {
+        Ok(Semantic::checked(input))
     }
 }
+
+// impl<'de> de::Deserialize<'de> for Checked<Semantic> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<Semantic>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "semantic name")
+//             }
+
+//             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 Ok(Semantic::checked(value))
+//             }
+//         }
+//         deserializer.deserialize_str(Visitor)
+//     }
+// }

@@ -2,7 +2,6 @@ use crate::validation::{Checked, Error, Validate};
 use crate::{accessor, extensions, scene, Extras, Index, Path, Root};
 use gltf_derive::Validate;
 use nanoserde::{DeJson, SerJson};
-use std::fmt;
 
 /// All valid animation interpolation algorithms.
 pub const VALID_INTERPOLATIONS: &[&str] = &["LINEAR", "STEP", "CUBICSPLINE"];
@@ -175,92 +174,142 @@ impl Default for Interpolation {
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<Interpolation> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<Interpolation>;
+impl DeJson for Checked<Interpolation> {
+    fn deserialize_json(input: &str) -> Result<Self, nanoserde::DeJsonErr> {
+        use self::Interpolation::*;
+        use Checked::*;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_INTERPOLATIONS)
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::Interpolation::*;
-                use crate::validation::Checked::*;
-                Ok(match value {
-                    "LINEAR" => Valid(Linear),
-                    "STEP" => Valid(Step),
-                    "CUBICSPLINE" => Valid(CubicSpline),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_str(Visitor)
-    }
-}
-
-impl ser::Serialize for Interpolation {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_str(match *self {
-            Interpolation::Linear => "LINEAR",
-            Interpolation::Step => "STEP",
-            Interpolation::CubicSpline => "CUBICSPLINE",
+        Ok(match input {
+            "LINEAR" => Valid(Linear),
+            "STEP" => Valid(Step),
+            "CUBICSPLINE" => Valid(CubicSpline),
+            _ => Invalid,
         })
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<Property> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<Property>;
+// impl<'de> de::Deserialize<'de> for Checked<Interpolation> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<Interpolation>;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_PROPERTIES)
-            }
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_INTERPOLATIONS)
+//             }
 
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::Property::*;
-                use crate::validation::Checked::*;
-                Ok(match value {
-                    "translation" => Valid(Translation),
-                    "rotation" => Valid(Rotation),
-                    "scale" => Valid(Scale),
-                    "weights" => Valid(MorphTargetWeights),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_str(Visitor)
+//             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::Interpolation::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value {
+//                     "LINEAR" => Valid(Linear),
+//                     "STEP" => Valid(Step),
+//                     "CUBICSPLINE" => Valid(CubicSpline),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_str(Visitor)
+//     }
+// }
+
+impl SerJson for Interpolation {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        match self {
+            Interpolation::Linear => "LINEAR".ser_json(d, s),
+            Interpolation::Step => "STEP".ser_json(d, s),
+            Interpolation::CubicSpline => "CUBICSPLINE".ser_json(d, s),
+        };
     }
 }
 
-impl ser::Serialize for Property {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_str(match *self {
-            Property::Translation => "translation",
-            Property::Rotation => "rotation",
-            Property::Scale => "scale",
-            Property::MorphTargetWeights => "weights",
+// impl ser::Serialize for Interpolation {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_str(match *self {
+//             Interpolation::Linear => "LINEAR",
+//             Interpolation::Step => "STEP",
+//             Interpolation::CubicSpline => "CUBICSPLINE",
+//         })
+//     }
+// }
+
+impl DeJson for Checked<Property> {
+    fn deserialize_json(input: &str) -> Result<Self, nanoserde::DeJsonErr> {
+        use self::Property::*;
+        use Checked::*;
+
+        Ok(match input {
+            "translation" => Valid(Translation),
+            "rotation" => Valid(Rotation),
+            "scale" => Valid(Scale),
+            "weights" => Valid(MorphTargetWeights),
+            _ => Invalid,
         })
     }
 }
+
+// impl<'de> de::Deserialize<'de> for Checked<Property> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<Property>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_PROPERTIES)
+//             }
+
+//             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::Property::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value {
+//                     "translation" => Valid(Translation),
+//                     "rotation" => Valid(Rotation),
+//                     "scale" => Valid(Scale),
+//                     "weights" => Valid(MorphTargetWeights),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_str(Visitor)
+//     }
+// }
+
+impl SerJson for Property {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        match *self {
+            Property::Translation => "translation".ser_json(d, s),
+            Property::Rotation => "rotation".ser_json(d, s),
+            Property::Scale => "scale".ser_json(d, s),
+            Property::MorphTargetWeights => "weights".ser_json(d, s),
+        }
+    }
+}
+
+// impl ser::Serialize for Property {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_str(match *self {
+//             Property::Translation => "translation",
+//             Property::Rotation => "rotation",
+//             Property::Scale => "scale",
+//             Property::MorphTargetWeights => "weights",
+//         })
+//     }
+// }

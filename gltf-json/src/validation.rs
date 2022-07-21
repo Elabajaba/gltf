@@ -1,4 +1,4 @@
-use nanoserde::SerJson;
+use nanoserde::{SerJson, SerJsonState};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -147,15 +147,15 @@ impl<T: Validate> Validate for Vec<T> {
     }
 }
 
-// impl Validate for std::boxed::Box<serde_json::value::RawValue> {
-//     fn validate<P, R>(&self, _: &Root, _: P, _: &mut R)
-//     where
-//         P: Fn() -> Path,
-//         R: FnMut(&dyn Fn() -> Path, Error),
-//     {
-//         // nop
-//     }
-// }
+impl Validate for std::boxed::Box<SerJsonState> {
+    fn validate<P, R>(&self, _: &Root, _: P, _: &mut R)
+    where
+        P: Fn() -> Path,
+        R: FnMut(&dyn Fn() -> Path, Error),
+    {
+        // nop
+    }
+}
 
 impl std::error::Error for Error {}
 
@@ -183,4 +183,4 @@ impl Validate for [f32; 4] {}
 impl Validate for [f32; 16] {}
 impl Validate for () {}
 impl Validate for String {}
-impl Validate for SerJson {}
+// impl Validate for dyn SerJson {}

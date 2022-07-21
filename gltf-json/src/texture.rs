@@ -3,7 +3,7 @@ use crate::{extensions, image, Extras, Index};
 use gltf_derive::Validate;
 // use serde::{de, ser};
 use nanoserde::{DeJson, SerJson};
-use std::fmt;
+use std::convert::TryInto;
 
 /// Corresponds to `GL_NEAREST`.
 pub const NEAREST: u32 = 9728;
@@ -219,69 +219,103 @@ pub struct Info {
     pub extras: Extras,
 }
 
-impl<'de> de::Deserialize<'de> for Checked<MagFilter> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<MagFilter>;
+impl DeJson for Checked<MagFilter> {
+    fn deserialize_json(input: &str) -> Result<Self, nanoserde::DeJsonErr> {
+        use Checked::*;
+        use MagFilter::*;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_MAG_FILTERS)
-            }
+        let value: u32 = input.try_into()?;
 
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::MagFilter::*;
-                use crate::validation::Checked::*;
-                Ok(match value as u32 {
-                    NEAREST => Valid(Nearest),
-                    LINEAR => Valid(Linear),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_u64(Visitor)
+        Ok(match value {
+            NEAREST => Valid(Nearest),
+            LINEAR => Valid(Linear),
+            _ => Invalid,
+        })
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<MinFilter> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<MinFilter>;
+// impl<'de> de::Deserialize<'de> for Checked<MagFilter> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<MagFilter>;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_MIN_FILTERS)
-            }
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_MAG_FILTERS)
+//             }
 
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::MinFilter::*;
-                use crate::validation::Checked::*;
-                Ok(match value as u32 {
-                    NEAREST => Valid(Nearest),
-                    LINEAR => Valid(Linear),
-                    NEAREST_MIPMAP_NEAREST => Valid(NearestMipmapNearest),
-                    LINEAR_MIPMAP_NEAREST => Valid(LinearMipmapNearest),
-                    NEAREST_MIPMAP_LINEAR => Valid(NearestMipmapLinear),
-                    LINEAR_MIPMAP_LINEAR => Valid(LinearMipmapLinear),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_u64(Visitor)
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::MagFilter::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value as u32 {
+//                     NEAREST => Valid(Nearest),
+//                     LINEAR => Valid(Linear),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor)
+//     }
+// }
+
+impl DeJson for Checked<MinFilter> {
+    fn deserialize_json(input: &str) -> Result<Self, nanoserde::DeJsonErr> {
+        use Checked::*;
+        use MinFilter::*;
+
+        let value: u32 = input.try_into()?;
+
+        Ok(match value {
+            NEAREST => Valid(Nearest),
+            LINEAR => Valid(Linear),
+            NEAREST_MIPMAP_NEAREST => Valid(NearestMipmapNearest),
+            LINEAR_MIPMAP_NEAREST => Valid(LinearMipmapNearest),
+            NEAREST_MIPMAP_LINEAR => Valid(NearestMipmapLinear),
+            LINEAR_MIPMAP_LINEAR => Valid(LinearMipmapLinear),
+            _ => Invalid,
+        })
     }
 }
+
+// impl<'de> de::Deserialize<'de> for Checked<MinFilter> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<MinFilter>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_MIN_FILTERS)
+//             }
+
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::MinFilter::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value as u32 {
+//                     NEAREST => Valid(Nearest),
+//                     LINEAR => Valid(Linear),
+//                     NEAREST_MIPMAP_NEAREST => Valid(NearestMipmapNearest),
+//                     LINEAR_MIPMAP_NEAREST => Valid(LinearMipmapNearest),
+//                     NEAREST_MIPMAP_LINEAR => Valid(NearestMipmapLinear),
+//                     LINEAR_MIPMAP_LINEAR => Valid(LinearMipmapLinear),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor)
+//     }
+// }
 
 // impl ser::Serialize for MinFilter {
 //     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -298,36 +332,52 @@ impl SerJson for MinFilter {
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<WrappingMode> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<WrappingMode>;
+impl DeJson for Checked<WrappingMode> {
+    fn deserialize_json(input: &str) -> Result<Self, nanoserde::DeJsonErr> {
+        use Checked::*;
+        use WrappingMode::*;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_WRAPPING_MODES)
-            }
+        let value: u32 = input.try_into()?;
 
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::WrappingMode::*;
-                use crate::validation::Checked::*;
-                Ok(match value as u32 {
-                    CLAMP_TO_EDGE => Valid(ClampToEdge),
-                    MIRRORED_REPEAT => Valid(MirroredRepeat),
-                    REPEAT => Valid(Repeat),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_u64(Visitor)
+        Ok(match value {
+            CLAMP_TO_EDGE => Valid(ClampToEdge),
+            MIRRORED_REPEAT => Valid(MirroredRepeat),
+            REPEAT => Valid(Repeat),
+            _ => Invalid,
+        })
     }
 }
+
+// impl<'de> de::Deserialize<'de> for Checked<WrappingMode> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<WrappingMode>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_WRAPPING_MODES)
+//             }
+
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::WrappingMode::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value as u32 {
+//                     CLAMP_TO_EDGE => Valid(ClampToEdge),
+//                     MIRRORED_REPEAT => Valid(MirroredRepeat),
+//                     REPEAT => Valid(Repeat),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor)
+//     }
+// }
 
 // impl ser::Serialize for MagFilter {
 //     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
