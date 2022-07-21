@@ -1,10 +1,9 @@
 use std::convert::TryInto;
-use std::str::Chars;
 
 use crate::validation::Checked;
 use crate::{extensions, Extras, Index};
 use gltf_derive::Validate;
-use nanoserde::{DeJson, DeJsonErr, DeJsonState, SerJson};
+use nanoserde::{DeJson, DeJsonErr, SerJson};
 
 /// Corresponds to `GL_ARRAY_BUFFER`.
 pub const ARRAY_BUFFER: u32 = 34_962;
@@ -118,16 +117,29 @@ pub struct View {
 }
 
 impl DeJson for Checked<Target> {
-    fn de_json(state: &mut DeJsonState, input: &mut Chars<'_>) -> Result<Self, DeJsonErr> {
-        let val: u32 = state.as_f64().try_into()?;
-        let temp = match val {
-            ARRAY_BUFFER => Target::ArrayBuffer,
-            ELEMENT_ARRAY_BUFFER => Target::ElementArrayBuffer,
-            // _ => Err("Invalid target, valid targets are: {}", VALID_TARGETS),
-        };
+    fn deserialize_json(input: &str) -> Result<Self, DeJsonErr> {
+        use Checked::*;
 
-        todo!()
+        // TODO: Is this right? What should I do for an Invalid thing?
+
+        let val: u32 = input.try_into()?;
+        Ok(match val {
+            ARRAY_BUFFER => Valid(Target::ArrayBuffer),
+            ELEMENT_ARRAY_BUFFER => Valid(Target::ElementArrayBuffer),
+            _ => Invalid,
+        })
     }
+    // fn de_json(state: &mut DeJsonState, input: &mut Chars<'_>) -> Result<Self, DeJsonErr> {
+    //     use Checked::*;
+    //     let val: u32 = state.as_f64().try_into()?;
+    //     let temp = match val {
+    //         ARRAY_BUFFER => Valid(Target::ArrayBuffer),
+    //         ELEMENT_ARRAY_BUFFER => Valid(Target::ElementArrayBuffer),
+    //         _ => Invalid,
+    //     };
+
+    //     Ok(temp)
+    // }
 }
 
 // impl<'de> de::Deserialize<'de> for Checked<Target> {

@@ -2,7 +2,6 @@ use crate::validation::{Checked, Error, Validate};
 use crate::{extensions, Extras, Path, Root};
 use gltf_derive::Validate;
 use nanoserde::{DeJson, SerJson};
-use std::fmt;
 
 /// All valid camera types.
 pub const VALID_CAMERA_TYPES: &[&str] = &["perspective", "orthographic"];
@@ -133,44 +132,59 @@ impl Validate for Camera {
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<Type> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<Type>;
+// impl<'de> de::Deserialize<'de> for Checked<Type> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<Type>;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_CAMERA_TYPES)
-            }
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_CAMERA_TYPES)
+//             }
 
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::Type::*;
-                use crate::validation::Checked::*;
-                Ok(match value {
-                    "perspective" => Valid(Perspective),
-                    "orthographic" => Valid(Orthographic),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_str(Visitor)
+//             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::Type::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value {
+//                     "perspective" => Valid(Perspective),
+//                     "orthographic" => Valid(Orthographic),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_str(Visitor)
+//     }
+// }
+
+impl DeJson for Checked<Type> {
+    fn de_json(state: &mut nanoserde::DeJsonState, input: &mut std::str::Chars) -> Result<Self, nanoserde::DeJsonErr> {
+        todo!("dejson checked<type> in camera.rs")
     }
 }
 
-impl ser::Serialize for Type {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        match *self {
-            Type::Perspective => serializer.serialize_str("perspective"),
-            Type::Orthographic => serializer.serialize_str("orthographic"),
+// impl ser::Serialize for Type {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         match *self {
+//             Type::Perspective => serializer.serialize_str("perspective"),
+//             Type::Orthographic => serializer.serialize_str("orthographic"),
+//         }
+//     }
+// }
+
+impl SerJson for Type {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        match self {
+            Type::Perspective => "perspective".ser_json(d, s),
+            Type::Orthographic => "orthographic".ser_json(d, s),
         }
     }
 }

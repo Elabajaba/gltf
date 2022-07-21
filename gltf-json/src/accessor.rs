@@ -1,16 +1,13 @@
 use crate::validation::{Checked, Error, Validate};
 use crate::{buffer, extensions, Extras, Index, Path, Root};
 use gltf_derive::Validate;
-// use serde::{de, ser};
-use nanoserde::{DeJson, SerJson, DeJsonTok};
-// use serde_json::Value;
-use std::fmt;
+use nanoserde::{DeJson, DeJsonErr, DeJsonTok, SerJson};
 
 /// The component data type.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, DeJson)]
 pub enum ComponentType {
     /// Corresponds to `GL_BYTE`.
-    I8 = 1,
+    I8,
     /// Corresponds to `GL_UNSIGNED_BYTE`.
     U8,
     /// Corresponds to `GL_SHORT`.
@@ -27,7 +24,7 @@ pub enum ComponentType {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, DeJson)]
 pub enum Type {
     /// Scalar quantity.
-    Scalar = 1,
+    Scalar,
     /// 2D vector.
     Vec2,
     /// 3D vector.
@@ -284,112 +281,183 @@ pub struct IndexComponentType(pub ComponentType);
 #[derive(Clone, Copy, Debug, DeJson, SerJson)]
 pub struct GenericComponentType(pub ComponentType);
 
-impl<'de> de::Deserialize<'de> for Checked<GenericComponentType> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<GenericComponentType>;
+impl DeJson for Checked<GenericComponentType> {
+    fn deserialize_json(input: &str) -> Result<Self, DeJsonErr> {
+        use self::ComponentType::*;
+        use Checked::*;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_COMPONENT_TYPES)
-            }
+        // TODO: Is this right? What should I do for an Invalid thing?
 
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::ComponentType::*;
-                use crate::validation::Checked::*;
-                Ok(match value as u32 {
-                    BYTE => Valid(GenericComponentType(I8)),
-                    UNSIGNED_BYTE => Valid(GenericComponentType(U8)),
-                    SHORT => Valid(GenericComponentType(I16)),
-                    UNSIGNED_SHORT => Valid(GenericComponentType(U16)),
-                    UNSIGNED_INT => Valid(GenericComponentType(U32)),
-                    FLOAT => Valid(GenericComponentType(F32)),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_u64(Visitor)
+        let val: u32 = input.try_into()?;
+        Ok(match val {
+            BYTE => Valid(GenericComponentType(I8)),
+            UNSIGNED_BYTE => Valid(GenericComponentType(U8)),
+            SHORT => Valid(GenericComponentType(I16)),
+            UNSIGNED_SHORT => Valid(GenericComponentType(U16)),
+            UNSIGNED_INT => Valid(GenericComponentType(U32)),
+            FLOAT => Valid(GenericComponentType(F32)),
+            _ => Invalid,
+        })
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<IndexComponentType> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<IndexComponentType>;
+// impl<'de> de::Deserialize<'de> for Checked<GenericComponentType> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<GenericComponentType>;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_INDEX_TYPES)
-            }
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_COMPONENT_TYPES)
+//             }
 
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::ComponentType::*;
-                use crate::validation::Checked::*;
-                Ok(match value as u32 {
-                    UNSIGNED_BYTE => Valid(IndexComponentType(U8)),
-                    UNSIGNED_SHORT => Valid(IndexComponentType(U16)),
-                    UNSIGNED_INT => Valid(IndexComponentType(U32)),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_u64(Visitor)
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::ComponentType::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value as u32 {
+//                     BYTE => Valid(GenericComponentType(I8)),
+//                     UNSIGNED_BYTE => Valid(GenericComponentType(U8)),
+//                     SHORT => Valid(GenericComponentType(I16)),
+//                     UNSIGNED_SHORT => Valid(GenericComponentType(U16)),
+//                     UNSIGNED_INT => Valid(GenericComponentType(U32)),
+//                     FLOAT => Valid(GenericComponentType(F32)),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor)
+//     }
+// }
+
+impl DeJson for Checked<IndexComponentType> {
+    fn deserialize_json(input: &str) -> Result<Self, DeJsonErr> {
+        use self::ComponentType::*;
+        use Checked::*;
+
+        // TODO: Is this right? What should I do for an Invalid thing?
+
+        let val: u32 = input.try_into()?;
+        Ok(match val {
+            UNSIGNED_BYTE => Valid(IndexComponentType(U8)),
+            UNSIGNED_SHORT => Valid(IndexComponentType(U16)),
+            UNSIGNED_INT => Valid(IndexComponentType(U32)),
+            _ => Invalid,
+        })
     }
 }
 
-impl<'de> de::Deserialize<'de> for Checked<Type> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Checked<Type>;
+// impl<'de> de::Deserialize<'de> for Checked<IndexComponentType> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<IndexComponentType>;
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "any of: {:?}", VALID_ACCESSOR_TYPES)
-            }
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_INDEX_TYPES)
+//             }
 
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                use self::Type::*;
-                use crate::validation::Checked::*;
-                Ok(match value {
-                    "SCALAR" => Valid(Scalar),
-                    "VEC2" => Valid(Vec2),
-                    "VEC3" => Valid(Vec3),
-                    "VEC4" => Valid(Vec4),
-                    "MAT2" => Valid(Mat2),
-                    "MAT3" => Valid(Mat3),
-                    "MAT4" => Valid(Mat4),
-                    _ => Invalid,
-                })
-            }
-        }
-        deserializer.deserialize_str(Visitor)
+//             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::ComponentType::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value as u32 {
+//                     UNSIGNED_BYTE => Valid(IndexComponentType(U8)),
+//                     UNSIGNED_SHORT => Valid(IndexComponentType(U16)),
+//                     UNSIGNED_INT => Valid(IndexComponentType(U32)),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_u64(Visitor)
+//     }
+// }
+
+impl DeJson for Checked<Type> {
+    fn deserialize_json(input: &str) -> Result<Self, DeJsonErr> {
+        use self::Type::*;
+        use Checked::*;
+
+        // TODO: Is this right? What should I do for an Invalid thing?
+
+        Ok(match input {
+            "SCALAR" => Valid(Scalar),
+            "VEC2" => Valid(Vec2),
+            "VEC3" => Valid(Vec3),
+            "VEC4" => Valid(Vec4),
+            "MAT2" => Valid(Mat2),
+            "MAT3" => Valid(Mat3),
+            "MAT4" => Valid(Mat4),
+            _ => Invalid,
+        })
     }
 }
 
-impl ser::Serialize for Type {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_str(match *self {
+// impl<'de> de::Deserialize<'de> for Checked<Type> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: de::Deserializer<'de>,
+//     {
+//         struct Visitor;
+//         impl<'de> de::Visitor<'de> for Visitor {
+//             type Value = Checked<Type>;
+
+//             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//                 write!(f, "any of: {:?}", VALID_ACCESSOR_TYPES)
+//             }
+
+//             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+//             where
+//                 E: de::Error,
+//             {
+//                 use self::Type::*;
+//                 use crate::validation::Checked::*;
+//                 Ok(match value {
+//                     "SCALAR" => Valid(Scalar),
+//                     "VEC2" => Valid(Vec2),
+//                     "VEC3" => Valid(Vec3),
+//                     "VEC4" => Valid(Vec4),
+//                     "MAT2" => Valid(Mat2),
+//                     "MAT3" => Valid(Mat3),
+//                     "MAT4" => Valid(Mat4),
+//                     _ => Invalid,
+//                 })
+//             }
+//         }
+//         deserializer.deserialize_str(Visitor)
+//     }
+// }
+
+// impl ser::Serialize for Type {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_str(match *self {
+//             Type::Scalar => "SCALAR",
+//             Type::Vec2 => "VEC2",
+//             Type::Vec3 => "VEC3",
+//             Type::Vec4 => "VEC4",
+//             Type::Mat2 => "MAT2",
+//             Type::Mat3 => "MAT3",
+//             Type::Mat4 => "MAT4",
+//         })
+//     }
+// }
+
+impl SerJson for Type {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        let temp = match self {
             Type::Scalar => "SCALAR",
             Type::Vec2 => "VEC2",
             Type::Vec3 => "VEC3",
@@ -397,7 +465,8 @@ impl ser::Serialize for Type {
             Type::Mat2 => "MAT2",
             Type::Mat3 => "MAT3",
             Type::Mat4 => "MAT4",
-        })
+        };
+        temp.ser_json(d, s);
     }
 }
 
@@ -425,12 +494,18 @@ impl ComponentType {
     }
 }
 
-impl ser::Serialize for ComponentType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_u32(self.as_gl_enum())
+// impl ser::Serialize for ComponentType {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_u32(self.as_gl_enum())
+//     }
+// }
+
+impl SerJson for ComponentType {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        self.as_gl_enum().ser_json(d, s);
     }
 }
 

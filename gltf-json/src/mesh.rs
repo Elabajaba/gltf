@@ -41,10 +41,10 @@ pub const VALID_MODES: &[u32] = &[
 pub const VALID_MORPH_TARGETS: &[&str] = &["POSITION", "NORMAL", "TANGENT"];
 
 /// The type of primitives to render.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, DeJson, Eq, PartialEq)]
 pub enum Mode {
     /// Corresponds to `GL_POINTS`.
-    Points = 1,
+    Points,
 
     /// Corresponds to `GL_LINES`.
     Lines,

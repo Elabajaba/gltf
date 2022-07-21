@@ -1,7 +1,6 @@
 use crate::validation::{Checked, Error, Validate};
 use crate::{accessor, extensions, scene, Extras, Index, Path, Root};
 use gltf_derive::Validate;
-use serde::{de, ser};
 use nanoserde::{DeJson, SerJson};
 use std::fmt;
 
@@ -12,7 +11,7 @@ pub const VALID_INTERPOLATIONS: &[&str] = &["LINEAR", "STEP", "CUBICSPLINE"];
 pub const VALID_PROPERTIES: &[&str] = &["translation", "rotation", "scale", "weights"];
 
 /// Specifies an interpolation algorithm.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, DeJson)]
 pub enum Interpolation {
     /// Linear interpolation.
     ///
@@ -20,7 +19,7 @@ pub enum Interpolation {
     /// When targeting a rotation, spherical linear interpolation (slerp) should be
     /// used to interpolate quaternions. The number output of elements must equal
     /// the number of input elements.
-    Linear = 1,
+    Linear,
 
     /// Step interpolation.
     ///
@@ -40,10 +39,10 @@ pub enum Interpolation {
 }
 
 /// Specifies a property to animate.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, DeJson)]
 pub enum Property {
     /// XYZ translation vector.
-    Translation = 1,
+    Translation,
     /// XYZW rotation quaternion.
     Rotation,
     /// XYZ scale vector.
@@ -132,7 +131,8 @@ pub struct Target {
 #[derive(Clone, Debug, DeJson, SerJson, Validate)]
 pub struct Sampler {
     /// Extension specific data.
-    #[nserde(default, skip_serializing_if = "Option::is_none")]
+    #[nserde(default)]
+    #[nserde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<extensions::animation::Sampler>,
 
     /// Optional application specific data.

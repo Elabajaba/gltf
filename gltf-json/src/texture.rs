@@ -52,7 +52,7 @@ pub const VALID_WRAPPING_MODES: &[u32] = &[CLAMP_TO_EDGE, MIRRORED_REPEAT, REPEA
 #[derive(Clone, Copy, Debug, DeJson, Eq, PartialEq)]
 pub enum MagFilter {
     /// Corresponds to `GL_NEAREST`.
-    Nearest = 1,
+    Nearest,
 
     /// Corresponds to `GL_LINEAR`.
     Linear,
@@ -72,7 +72,7 @@ impl MagFilter {
 #[derive(Clone, Copy, Debug, DeJson, Eq, PartialEq)]
 pub enum MinFilter {
     /// Corresponds to `GL_NEAREST`.
-    Nearest = 1,
+    Nearest,
 
     /// Corresponds to `GL_LINEAR`.
     Linear,
@@ -108,7 +108,7 @@ impl MinFilter {
 #[derive(Clone, Copy, Debug, DeJson, Eq, PartialEq)]
 pub enum WrappingMode {
     /// Corresponds to `GL_CLAMP_TO_EDGE`.
-    ClampToEdge = 1,
+    ClampToEdge,
 
     /// Corresponds to `GL_MIRRORED_REPEAT`.
     MirroredRepeat,
@@ -283,12 +283,18 @@ impl<'de> de::Deserialize<'de> for Checked<MinFilter> {
     }
 }
 
-impl ser::Serialize for MinFilter {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_u32(self.as_gl_enum())
+// impl ser::Serialize for MinFilter {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_u32(self.as_gl_enum())
+//     }
+// }
+
+impl SerJson for MinFilter {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        self.as_gl_enum().ser_json(d, s);
     }
 }
 
@@ -323,12 +329,18 @@ impl<'de> de::Deserialize<'de> for Checked<WrappingMode> {
     }
 }
 
-impl ser::Serialize for MagFilter {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_u32(self.as_gl_enum())
+// impl ser::Serialize for MagFilter {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_u32(self.as_gl_enum())
+//     }
+// }
+
+impl SerJson for MagFilter {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        self.as_gl_enum().ser_json(d, s);
     }
 }
 
@@ -338,11 +350,17 @@ impl Default for WrappingMode {
     }
 }
 
-impl ser::Serialize for WrappingMode {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_u32(self.as_gl_enum())
+impl SerJson for WrappingMode {
+    fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+        self.as_gl_enum().ser_json(d, s);
     }
 }
+
+// impl ser::Serialize for WrappingMode {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: ser::Serializer,
+//     {
+//         serializer.serialize_u32(self.as_gl_enum())
+//     }
+// }

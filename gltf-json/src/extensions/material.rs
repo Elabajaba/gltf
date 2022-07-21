@@ -15,7 +15,13 @@ use gltf_derive::Validate;
 use nanoserde::{DeJson, SerJson};
 
 /// The material appearance of a primitive.
-#[derive(Clone, Debug, Default, DeJson, SerJson, Validate)]
+#[cfg_attr(feature = "KHR_materials_pbrSpecularGlossiness", DeJson, SerJson)]
+#[cfg_attr(feature = "KHR_materials_unlit", DeJson, SerJson)]
+#[cfg_attr(feature = "KHR_materials_transmission", DeJson, SerJson)]
+#[cfg_attr(feature = "KHR_materials_volume", DeJson, SerJson)]
+#[cfg_attr(feature = "KHR_materials_specular", DeJson, SerJson)]
+#[cfg_attr(feature = "KHR_materials_ior", DeJson, SerJson)]
+#[derive(Clone, Debug, Default, Validate)]
 pub struct Material {
     #[cfg(feature = "KHR_materials_pbrSpecularGlossiness")]
     #[cfg_attr(
