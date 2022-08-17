@@ -13,6 +13,9 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_json = { features = ["raw_value"], version = "1.0" }
 
+[patch.crates-io]
+serde_json = { git = "https://github.com/Marwes/json.git", branch = "min_ser", features = ["raw_value"]}
+
 [features]
 default = []
 names = []
