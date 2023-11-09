@@ -37,7 +37,7 @@ fn bounding_coords(points: &[Vertex]) -> ([f32; 3], [f32; 3]) {
     (min, max)
 }
 
-fn align_to_multiple_of_four(n: &mut u32) {
+fn align_to_multiple_of_four(n: &mut u64) {
     *n = (*n + 3) & !3;
 }
 
@@ -71,7 +71,7 @@ fn export(output: Output) {
 
     let (min, max) = bounding_coords(&triangle_vertices);
 
-    let buffer_length = (triangle_vertices.len() * mem::size_of::<Vertex>()) as u32;
+    let buffer_length = (triangle_vertices.len() * mem::size_of::<Vertex>()) as u64;
     let buffer = json::Buffer {
         byte_length: buffer_length,
         extensions: Default::default(),
@@ -192,7 +192,7 @@ fn export(output: Output) {
         }
         Output::Binary => {
             let json_string = json::serialize::to_string(&root).expect("Serialization error");
-            let mut json_offset = json_string.len() as u32;
+            let mut json_offset = json_string.len() as u64;
             align_to_multiple_of_four(&mut json_offset);
             let glb = gltf::binary::Glb {
                 header: gltf::binary::Header {

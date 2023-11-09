@@ -53,7 +53,7 @@ pub struct Header {
     /// Must be `2`.
     pub version: u32,
     /// Must match the length of the parent .glb file.
-    pub length: u32,
+    pub length: u64,
 }
 
 /// GLB chunk type.
@@ -87,7 +87,7 @@ impl Header {
             Ok(Self {
                 magic,
                 version: reader.read_u32::<LittleEndian>().map_err(Io)?,
-                length: reader.read_u32::<LittleEndian>().map_err(Io)?,
+                length: reader.read_u64::<LittleEndian>().map_err(Io)?,
             })
         } else {
             Err(Error::Magic(magic))
@@ -282,8 +282,9 @@ impl<'a> Glb<'a> {
         let header = Header::from_reader(&mut reader).map_err(crate::Error::Binary)?;
         match header.version {
             2 => {
-                let glb_len = header.length - Header::size_of() as u32;
-                let mut buf = vec![0; glb_len as usize];
+                // TODO: GLB binary chunks have an implicit limit of (2^32) - 1 bytes, so this is wrong.
+                let glb_len = header.length - Header::size_of() as u64;
+                let mut buf = vec![0; glb_len as usize]; // TODO: This will break on 32bit systems with large GLBs.
                 if let Err(e) = reader.read_exact(&mut buf).map_err(Error::Io) {
                     Err(crate::Error::Binary(e))
                 } else {
